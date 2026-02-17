@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — Church Smart System{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<p class="text-gray-400 text-xs mt-0.5">Selamat datang, {{ user.get_full_name|default:user.username }} 👋</p>
+{% endblock %}
+
+{% block topbar_actions %}
+{% comment %} <a href="{% url 'members:create' %}" {% endcomment %}
+<a href="#"
+   class="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all active:scale-95"
+   style="background: linear-gradient(135deg, #5a66e8, #7b52e8);">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Tambah Jemaat
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- ── STAT CARDS ── -->
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+
+    {% include 'dashboard/_stat_card.html' with
+        label="Total Jemaat"
+        value=stats.total_members|default:"0"
+        sub=stats.members_this_month|default:"0 jemaat baru bulan ini"
+        color="blue"
+        icon="users" %}
+
+    {% include 'dashboard/_stat_card.html' with
+        label="Total Keluarga"
+        value=stats.total_families|default:"0"
+        sub=stats.total_sectors|stringformat:"s"|add:" sektor aktif"
+        color="green"
+        icon="home" %}
+
+    {% include 'dashboard/_stat_card.html' with
+        label="Kehadiran Minggu Ini"
+        value=stats.attendance_this_week|default:"0"
+        sub=stats.attendance_percent|default:"0"|stringformat:"s"|add:"% dari total jemaat"
+        color="purple"
+        icon="check" %}
+
+    {% include 'dashboard/_stat_card.html' with
+        label="Anggota Tidak Aktif"
+        value=stats.inactive_members|default:"0"
+        sub="Perlu tindak lanjut"
+        color="red"
+        icon="alert" %}
+
+</div>
+
+<!-- ── ROW 2: Chart + Quick Actions ── -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
+
+    <!-- Attendance Chart -->
+    <div class="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="font-display font-semibold text-gray-800 text-base">Statistik Kehadiran</h3>
+                <p class="text-gray-400 text-xs mt-0.5">8 minggu terakhir</p>
+            </div>
+            <span class="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-3 py-1 rounded-full">
+                Per Ibadah Minggu
+            </span>
+        </div>
+        <div class="h-52">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <h3 class="font-display font-semibold text-gray-800 text-base mb-4">Aksi Cepat</h3>
+        <div class="space-y-2">
+            {% comment %} <a href="{% url 'members:create' %}" {% endcomment %}
+            <a href="#"
+               class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition group">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition flex-shrink-0">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-700 text-sm font-semibold">Tambah Jemaat</p>
+                    <p class="text-gray-400 text-xs">Daftarkan jemaat baru</p>
+                </div>
+            </a>
+
+            {% comment %} <a href="{% url 'attendance:create' %}" {% endcomment %}
+            <a href="#"
+               class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition group">
+                <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition flex-shrink-0">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-700 text-sm font-semibold">Input Kehadiran</p>
+                    <p class="text-gray-400 text-xs">Catat ibadah hari ini</p>
+                </div>
+            </a>
+
+            {% comment %} <a href="{% url 'letters:create' %}" {% endcomment %}
+            <a href="#"
+               class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition group">
+                <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition flex-shrink-0">
+                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-700 text-sm font-semibold">Buat Surat</p>
+                    <p class="text-gray-400 text-xs">Generate PDF surat</p>
+                </div>
+            </a>
+
+            {% comment %} <a href="{% url 'members:list' %}" {% endcomment %}
+            <a href="#"
+               class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition group">
+                <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-700 text-sm font-semibold">Cari Jemaat</p>
+                    <p class="text-gray-400 text-xs">Cari berdasarkan NIJ/nama</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── ROW 3: Birthdays + Absent Alert + Growth ── -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+    <!-- Upcoming Birthdays -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display font-semibold text-gray-800 text-base">🎂 Ulang Tahun</h3>
+            <span class="text-xs text-gray-400">7 hari ke depan</span>
+        </div>
+        {% if upcoming_birthdays %}
+            <div class="space-y-3">
+            {% for member in upcoming_birthdays %}
+                <div class="flex items-center gap-3">
+                    {% if member.photo %}
+                    <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                         class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                    {% else %}
+                    <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-brand-600 text-xs font-bold font-display">
+                            {{ member.full_name|slice:":2"|upper }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-700 text-sm font-medium truncate">{{ member.full_name }}</p>
+                        <p class="text-gray-400 text-xs">{{ member.date_of_birth|date:"j F" }}</p>
+                    </div>
+                    {% if member.days_until == 0 %}
+                    <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">Hari ini!</span>
+                    {% else %}
+                    <span class="text-xs text-gray-400 flex-shrink-0">{{ member.days_until }}h lagi</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-6">
+                <p class="text-gray-300 text-4xl mb-2">🎉</p>
+                <p class="text-gray-400 text-sm">Tidak ada ulang tahun minggu ini.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Absent Alert -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display font-semibold text-gray-800 text-base">⚠️ Perlu Perhatian</h3>
+            <span class="text-xs text-red-400 bg-red-50 px-2 py-0.5 rounded-full">
+                {{ absent_members|length|default:"0" }} jemaat
+            </span>
+        </div>
+        <p class="text-gray-400 text-xs mb-4">Tidak hadir lebih dari 4 minggu berturut-turut</p>
+        {% if absent_members %}
+            <div class="space-y-3">
+            {% for member in absent_members|slice:":5" %}
+                <a href="{% url 'members:detail' member.pk %}"
+                   class="flex items-center gap-3 hover:bg-gray-50 rounded-lg p-1 -mx-1 transition">
+                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-red-600 text-xs font-bold font-display">
+                            {{ member.full_name|slice:":2"|upper }}
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-700 text-sm font-medium truncate">{{ member.full_name }}</p>
+                        <p class="text-gray-400 text-xs">{{ member.absent_weeks }} minggu absen</p>
+                    </div>
+                </a>
+            {% endfor %}
+            </div>
+            {% if absent_members|length > 5 %}
+            <a href="{% url 'attendance:absent_report' %}"
+               class="block mt-3 text-center text-xs text-brand-600 hover:text-brand-700 font-medium">
+                Lihat semua {{ absent_members|length }} jemaat →
+            </a>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-6">
+                <p class="text-gray-300 text-4xl mb-2">✓</p>
+                <p class="text-gray-400 text-sm">Semua jemaat hadir teratur.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Member Growth -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display font-semibold text-gray-800 text-base">Pertumbuhan Jemaat</h3>
+        </div>
+        <div class="h-36 mb-4">
+            <canvas id="growthChart"></canvas>
+        </div>
+        <!-- Membership status breakdown -->
+        <div class="space-y-2">
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                    <span class="text-gray-600">Anggota Penuh</span>
+                </div>
+                <span class="font-semibold text-gray-800">{{ stats.full_members|default:"0" }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                    <span class="text-gray-600">Anggota Persiapan</span>
+                </div>
+                <span class="font-semibold text-gray-800">{{ stats.preparation_members|default:"0" }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-gray-300 flex-shrink-0"></span>
+                    <span class="text-gray-600">Tidak Aktif</span>
+                </div>
+                <span class="font-semibold text-gray-800">{{ stats.inactive_members|default:"0" }}</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── ROW 4: Recent Members ── -->
+<div class="mt-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+        <h3 class="font-display font-semibold text-gray-800 text-base">Jemaat Terbaru</h3>
+        <a href="#" class="text-brand-600 hover:text-brand-700 text-sm font-medium transition">
+            Lihat semua →
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-50">
+                    <th class="text-left text-gray-400 font-medium px-6 py-3 text-xs uppercase tracking-wide">Jemaat</th>
+                    <th class="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wide">NIJ</th>
+                    <th class="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Sektor</th>
+                    <th class="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wide hidden lg:table-cell">Status</th>
+                    <th class="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wide hidden lg:table-cell">Terdaftar</th>
+                    <th class="px-4 py-3"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+            {% for member in recent_members %}
+                <tr class="hover:bg-gray-50/50 transition">
+                    <td class="px-6 py-3.5">
+                        <div class="flex items-center gap-3">
+                            {% if member.photo %}
+                            <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                                 class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                            {% else %}
+                            <div class="w-8 h-8 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center flex-shrink-0">
+                                <span class="text-brand-600 text-xs font-bold font-display">
+                                    {{ member.full_name|slice:":2"|upper }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <p class="text-gray-800 font-medium">{{ member.full_name }}</p>
+                                <p class="text-gray-400 text-xs">{{ member.family.family_name }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <code class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-mono">
+                            {{ member.member_id }}
+                        </code>
+                    </td>
+                    <td class="px-4 py-3.5 text-gray-600 hidden md:table-cell">{{ member.current_sector.name }}</td>
+                    <td class="px-4 py-3.5 hidden lg:table-cell">
+                        {% if member.membership_status == 'FULL' %}
+                        <span class="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium">Anggota Penuh</span>
+                        {% elif member.membership_status == 'PREPARATION' %}
+                        <span class="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-medium">Persiapan</span>
+                        {% else %}
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-medium">{{ member.get_membership_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3.5 text-gray-400 text-xs hidden lg:table-cell">
+                        {{ member.created_at|date:"j M Y" }}
+                    </td>
+                    <td class="px-4 py-3.5 text-right">
+                        <a href="{% url 'members:detail' member.pk %}"
+                           class="text-xs text-brand-600 hover:text-brand-700 font-medium transition">
+                            Detail
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                        Belum ada data jemaat. <a href="#" class="text-brand-600 hover:underline">Tambah sekarang →</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ── Attendance Chart ──────────────────────────────────────────
+const attendanceCtx = document.getElementById('attendanceChart')?.getContext('2d');
+if (attendanceCtx) {
+    const attendanceData = {{ attendance_chart_data|default:"[0,0,0,0,0,0,0,0]"|safe }};
+    const attendanceLabels = {{ attendance_chart_labels|default:'["","","","","","","",""]'|safe }};
+
+    new Chart(attendanceCtx, {
+        type: 'bar',
+        data: {
+            labels: attendanceLabels,
+            datasets: [{
+                label: 'Kehadiran',
+                data: attendanceData,
+                backgroundColor: 'rgba(98,114,245,0.15)',
+                borderColor: 'rgba(98,114,245,0.8)',
+                borderWidth: 2,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e2330',
+                    titleColor: '#9ca3af',
+                    bodyColor: '#ffffff',
+                    borderColor: '#2a3040',
+                    borderWidth: 1,
+                    padding: 10,
+                    callbacks: {
+                        label: ctx => ` ${ctx.parsed.y} jemaat hadir`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#9ca3af', font: { size: 11 } }
+                },
+                y: {
+                    grid: { color: '#f3f4f6' },
+                    border: { display: false, dash: [4,4] },
+                    ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 10 },
+                    beginAtZero: true,
+                }
+            }
+        }
+    });
+}
+
+// ── Growth Donut Chart ────────────────────────────────────────
+const growthCtx = document.getElementById('growthChart')?.getContext('2d');
+if (growthCtx) {
+    const full        = parseInt('{{ stats.full_members|default:"0" }}') || 0;
+    const preparation = parseInt('{{ stats.preparation_members|default:"0" }}') || 0;
+    const inactive    = parseInt('{{ stats.inactive_members|default:"0" }}') || 0;
+    const total       = full + preparation + inactive || 1;
+
+    new Chart(growthCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Anggota Penuh', 'Persiapan', 'Tidak Aktif'],
+            datasets: [{
+                data: [full, preparation, inactive],
+                backgroundColor: ['#6272f5', '#fbbf24', '#e5e7eb'],
+                borderWidth: 0,
+                hoverOffset: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '72%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e2330',
+                    titleColor: '#9ca3af',
+                    bodyColor: '#ffffff',
+                    borderColor: '#2a3040',
+                    borderWidth: 1,
+                    padding: 10,
+                    callbacks: {
+                        label: ctx => ` ${ctx.parsed} jemaat (${Math.round(ctx.parsed/total*100)}%)`
+                    }
+                }
+            }
+        },
+        plugins: [{
+            id: 'centerText',
+            beforeDraw(chart) {
+                const { ctx, chartArea: { left, right, top, bottom } } = chart;
+                const cx = (left + right) / 2;
+                const cy = (top + bottom) / 2;
+                ctx.save();
+                ctx.font = 'bold 22px Plus Jakarta Sans';
+                ctx.fillStyle = '#1f2937';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(total, cx, cy - 8);
+                ctx.font = '11px DM Sans';
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillText('Total', cx, cy + 12);
+                ctx.restore();
+            }
+        }]
+    });
+}
+</script>
+{% endblock %}
