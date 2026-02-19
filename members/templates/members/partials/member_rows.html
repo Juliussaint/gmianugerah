@@ -1,0 +1,85 @@
+{% for member in page_obj %}
+<tr class="hover:bg-gray-50/50 transition" id="member-row-{{ member.pk }}">
+    <td class="px-6 py-4">
+        <div class="flex items-center gap-3">
+            {% if member.photo %}
+            <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                 class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+            {% else %}
+            <div class="w-10 h-10 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center flex-shrink-0">
+                <span class="text-brand-600 text-sm font-bold font-display">
+                    {{ member.initials }}
+                </span>
+            </div>
+            {% endif %}
+            <div>
+                <p class="text-gray-800 font-semibold">{{ member.full_name }}</p>
+                <p class="text-gray-400 text-xs">
+                    {{ member.get_gender_display }} • 
+                    {% if member.age %}{{ member.age }} tahun{% else %}—{% endif %}
+                </p>
+            </div>
+        </div>
+    </td>
+    <td class="px-4 py-4">
+        <code class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-mono">
+            {{ member.member_id }}
+        </code>
+    </td>
+    <td class="px-4 py-4 text-gray-600 hidden md:table-cell">
+        {{ member.current_sector.name }}
+    </td>
+    <td class="px-4 py-4 text-gray-600 hidden lg:table-cell">
+        {{ member.family.family_name }}
+    </td>
+    <td class="px-4 py-4 hidden xl:table-cell">
+        {% if member.is_active %}
+            {% if member.membership_status == 'FULL' %}
+            <span class="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium">Anggota Penuh</span>
+            {% elif member.membership_status == 'PREPARATION' %}
+            <span class="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-medium">Persiapan</span>
+            {% else %}
+            <span class="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-medium">{{ member.get_membership_status_display }}</span>
+            {% endif %}
+        {% else %}
+            <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-medium">Tidak Aktif</span>
+        {% endif %}
+    </td>
+    <td class="px-4 py-4 text-right">
+        <div class="flex items-center justify-end gap-2">
+            <a href="{% url 'members:detail' member.pk %}"
+               class="text-xs text-brand-600 hover:text-brand-700 font-medium transition">
+                Detail
+            </a>
+            <button hx-get="{% url 'members:update' member.pk %}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    class="text-xs text-gray-600 hover:text-gray-800 transition">
+                Edit
+            </button>
+            <button hx-get="{% url 'members:delete' member.pk %}"
+                    hx-target="#member-row-{{ member.pk }}"
+                    hx-swap="outerHTML"
+                    class="text-xs text-red-600 hover:text-red-700 transition">
+                Hapus
+            </button>
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+        {% if request.GET.q %}
+            Tidak ada hasil untuk "{{ request.GET.q }}"
+        {% else %}
+            Belum ada data jemaat.
+            <button hx-get="{% url 'members:create' %}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    class="text-brand-600 hover:underline">
+                Tambah sekarang →
+            </button>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}

@@ -1,0 +1,177 @@
+<!-- Modal Background -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+     id="member-modal"
+     @click.self="document.getElementById('modal-container').innerHTML = ''">
+    
+    <!-- Modal Content -->
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        
+        <!-- Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+            <h2 class="font-display font-bold text-gray-800 text-xl">{{ title }}</h2>
+            <button onclick="document.getElementById('modal-container').innerHTML = ''"
+                    class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Form -->
+        <form hx-post="{% if member %}{% url 'members:update' member.pk %}{% else %}{% url 'members:create' %}{% endif %}"
+              hx-encoding="multipart/form-data"
+              hx-swap="none"
+              class="p-6 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Photo Upload -->
+            {% if form.photo %}
+            <div>
+                <div class="flex items-start gap-6">
+                    <div id="photo-preview" class="flex-shrink-0">
+                        {% if form.instance.photo %}
+                        <img src="{{ form.instance.photo.url }}" alt="Preview"
+                             class="w-24 h-24 rounded-2xl object-cover border-2 border-gray-100">
+                        {% else %}
+                        <div class="w-24 h-24 rounded-2xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center">
+                            <span class="text-brand-600 text-2xl font-bold font-display">
+                                {% if form.instance.pk %}{{ form.instance.initials }}{% else %}?{% endif %}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.photo.label }}</label>
+                        {{ form.photo }}
+                        {% if form.photo.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.photo.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Identitas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.full_name.label }} *</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.gender.label }} *</label>
+                    {{ form.gender }}
+                    {% if form.gender.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.gender.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.date_of_birth.label }} *</label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.date_of_birth.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.blood_type.label }}</label>
+                    {{ form.blood_type }}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.phone_number.label }}</label>
+                    {{ form.phone_number }}
+                    {% if form.phone_number.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Keanggotaan -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.family.label }} *</label>
+                    {{ form.family }}
+                    {% if form.family.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.family.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.current_sector.label }} *</label>
+                    {{ form.current_sector }}
+                    {% if form.current_sector.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.current_sector.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.membership_status.label }} *</label>
+                    {{ form.membership_status }}
+                </div>
+                
+                <div class="flex items-center gap-3 pt-8">
+                    {{ form.is_active }}
+                    <label for="id_is_active" class="text-gray-700 text-sm font-medium cursor-pointer">
+                        {{ form.is_active.label }}
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p class="text-red-700 text-sm">{{ form.non_field_errors.0 }}</p>
+            </div>
+            {% endif %}
+            
+            <!-- Submit -->
+            <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <button type="submit" class="btn-primary px-8">
+                    {{ submit_text }}
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('modal-container').innerHTML = ''"
+                        class="btn-secondary">
+                    Batal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Photo preview untuk modal
+(function() {
+    const photoInput = document.querySelector('#member-modal input[type="file"][name="photo"]');
+    const photoPreview = document.querySelector('#member-modal #photo-preview');
+    
+    if (photoInput && photoPreview) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview"
+                             class="w-24 h-24 rounded-2xl object-cover border-2 border-brand-200">
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+})();
+</script>

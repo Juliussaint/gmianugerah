@@ -1,0 +1,100 @@
+<!-- Modal Background -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+     id="transfer-modal"
+     @click.self="document.getElementById('modal-container').innerHTML = ''">
+    
+    <!-- Modal Content -->
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+        
+        <!-- Header -->
+        <div class="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+            <h2 class="font-display font-bold text-gray-800 text-xl">Pindah Sektor</h2>
+            <button onclick="document.getElementById('modal-container').innerHTML = ''"
+                    class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Member Info -->
+        <div class="bg-gray-50 px-6 py-4">
+            <div class="flex items-center gap-4">
+                {% if member.photo %}
+                <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                     class="w-16 h-16 rounded-xl object-cover flex-shrink-0">
+                {% else %}
+                <div class="w-16 h-16 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span class="text-brand-600 text-xl font-bold font-display">
+                        {{ member.initials }}
+                    </span>
+                </div>
+                {% endif %}
+                <div>
+                    <h3 class="font-display font-semibold text-gray-800 text-lg">{{ member.full_name }}</h3>
+                    <p class="text-gray-500 text-sm mt-1">
+                        <span class="font-mono text-xs bg-gray-200 px-2 py-0.5 rounded">{{ member.member_id }}</span>
+                    </p>
+                    <p class="text-gray-600 text-sm mt-2">
+                        <span class="font-semibold">Sektor saat ini:</span> {{ member.current_sector.name }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form -->
+        <form hx-post="{% url 'members:transfer_sector' member.pk %}"
+              hx-swap="none"
+              class="p-6 space-y-4">
+            {% csrf_token %}
+            
+            <!-- Sektor Baru -->
+            <div>
+                <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.new_sector.label }} *</label>
+                {{ form.new_sector }}
+                {% if form.new_sector.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.new_sector.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Tanggal Pindah -->
+            <div>
+                <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.transfer_date.label }} *</label>
+                {{ form.transfer_date }}
+                {% if form.transfer_date.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.transfer_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Alasan -->
+            <div>
+                <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.reason.label }}</label>
+                {{ form.reason }}
+                {% if form.reason.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.reason.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Catatan -->
+            <div>
+                <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.notes.label }}</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Submit -->
+            <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <button type="submit" class="btn-primary px-8">
+                    Pindahkan Sektor
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('modal-container').innerHTML = ''"
+                        class="btn-secondary">
+                    Batal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

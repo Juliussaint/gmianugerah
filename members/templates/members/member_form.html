@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} — Church Smart System{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block breadcrumb %}
+<div class="flex items-center gap-2 text-xs mt-0.5">
+    <a href="{% url 'members:list' %}" class="text-gray-400 hover:text-gray-600">Data Jemaat</a>
+    <span class="text-gray-300">›</span>
+    <span class="text-gray-600">{{ title }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl">
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Photo Upload (jika ada) -->
+        {% if form.photo %}
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h3 class="font-display font-semibold text-gray-800 text-base mb-4">Foto Jemaat</h3>
+            
+            <div class="flex items-start gap-6">
+                <!-- Preview -->
+                <div id="photo-preview" class="flex-shrink-0">
+                    {% if form.instance.photo %}
+                    <img src="{{ form.instance.photo.url }}" alt="Preview"
+                         class="w-32 h-32 rounded-2xl object-cover border-2 border-gray-100">
+                    {% else %}
+                    <div class="w-32 h-32 rounded-2xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center">
+                        <span class="text-brand-600 text-3xl font-bold font-display">
+                            {% if form.instance.pk %}{{ form.instance.initials }}{% else %}?{% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Upload -->
+                <div class="flex-1">
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.photo.label }}</label>
+                    {{ form.photo }}
+                    {% if form.photo.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.photo.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-gray-400 text-xs mt-2">Format: JPG, PNG. Maksimal 2MB. Disarankan ukuran 400x400px.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Identitas Pribadi -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h3 class="font-display font-semibold text-gray-800 text-base mb-4">Identitas Pribadi</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nama Lengkap -->
+                <div class="md:col-span-2">
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.full_name.label }} *</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Jenis Kelamin -->
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.gender.label }} *</label>
+                    {{ form.gender }}
+                    {% if form.gender.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.gender.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Tanggal Lahir -->
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.date_of_birth.label }} *</label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.date_of_birth.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Golongan Darah -->
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.blood_type.label }}</label>
+                    {{ form.blood_type }}
+                    {% if form.blood_type.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.blood_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kontak -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h3 class="font-display font-semibold text-gray-800 text-base mb-4">Kontak</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.phone_number.label }}</label>
+                    {{ form.phone_number }}
+                    {% if form.phone_number.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Keanggotaan -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h3 class="font-display font-semibold text-gray-800 text-base mb-4">Keanggotaan</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.family.label }} *</label>
+                    {{ form.family }}
+                    {% if form.family.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.family.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-gray-400 text-xs mt-1">
+                        Belum ada? <a href="#" class="text-brand-600 hover:underline">Buat keluarga baru</a>
+                    </p>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.current_sector.label }} *</label>
+                    {{ form.current_sector }}
+                    {% if form.current_sector.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.current_sector.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.membership_status.label }} *</label>
+                    {{ form.membership_status }}
+                    {% if form.membership_status.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.membership_status.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-start gap-3 pt-8">
+                    {{ form.is_active }}
+                    <label for="id_is_active" class="text-gray-700 text-sm font-medium cursor-pointer">
+                        {{ form.is_active.label }}
+                    </label>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.inactive_reason.label }}</label>
+                    {{ form.inactive_reason }}
+                    {% if form.inactive_reason.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.inactive_reason.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-gray-400 text-xs mt-1">Wajib diisi jika status tidak aktif.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Gereja (Collapsible) -->
+        <details class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <summary class="px-6 py-4 cursor-pointer hover:bg-gray-50 transition font-display font-semibold text-gray-800 text-sm">
+                Data Gereja (Opsional) ▾
+            </summary>
+            <div class="px-6 pb-6 pt-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.baptism_date.label }}</label>
+                        {{ form.baptism_date }}
+                        {% if form.baptism_date.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.baptism_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.sidi_date.label }}</label>
+                        {{ form.sidi_date }}
+                        {% if form.sidi_date.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.sidi_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.marriage_date.label }}</label>
+                        {{ form.marriage_date }}
+                        {% if form.marriage_date.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.marriage_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </details>
+        
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p class="text-red-700 text-sm">{{ form.non_field_errors.0 }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Submit Buttons -->
+        <div class="flex items-center gap-3">
+            <button type="submit" class="btn-primary px-8">
+                {{ submit_text }}
+            </button>
+            <a href="{% if member %}{% url 'members:detail' member.pk %}{% else %}{% url 'members:list' %}{% endif %}"
+               class="btn-secondary">
+                Batal
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Photo preview
+const photoInput = document.querySelector('input[type="file"][name="photo"]');
+const photoPreview = document.getElementById('photo-preview');
+
+if (photoInput && photoPreview) {
+    photoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview"
+                         class="w-32 h-32 rounded-2xl object-cover border-2 border-brand-200">
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+</script>
+{% endblock %}
