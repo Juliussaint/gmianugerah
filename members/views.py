@@ -479,3 +479,133 @@ def family_delete(request, pk):
         return render(request, 'members/partials/family_delete_confirm.html', context)
     
     return render(request, 'members/family_confirm_delete.html', context)
+
+
+# ════════════════════════════════════════════════════════════
+# SECTOR LIST (HTMX-enabled)
+# ════════════════════════════════════════════════════════════
+@login_required
+def sector_list(request):
+    """
+    Daftar semua sektor dengan statistik.
+    """
+    sectors = Sector.objects.annotate(
+        family_count=Count('families', filter=Q(families__family_status=Family.FamilyStatus.ACTIVE)),
+        member_count=Count('members', filter=Q(members__is_active=True))
+    ).all()
+    
+    context = {
+        'sectors': sectors,
+        'total_count': sectors.count(),
+    }
+    
+    return render(request, 'members/sector_list.html', context)
+
+
+# ════════════════════════════════════════════════════════════
+# SECTOR DETAIL
+# ════════════════════════════════════════════════════════════
+@login_required
+def sector_detail(request, pk):
+    """Detail informasi 1 sektor + list families & members."""
+    sector = get_object_or_404(Sector, pk=pk)
+    
+    # Families in this sector
+    families = sector.families.filter(
+        family_status=Family.FamilyStatus.ACTIVE
+    ).annotate(
+        member_count=Count('members', filter=Q(members__is_active=True))
+    )
+    
+    # Members in this sector
+    members = sector.members.filter(is_active=True).select_related('family')
+    
+    context = {
+        'sector': sector,
+        'families': families,
+        'members': members[:10],  # Show first 10
+        'family_count': families.count(),
+        'member_count': members.count(),
+    }
+    return render(request, 'members/sector_detail.html', context)
+
+
+# ════════════════════════════════════════════════════════════
+# SECTOR CREATE (HTMX Modal)
+# ════════════════════════════════════════════════════════════
+@login_required
+def sector_create(request):
+    """Tambah sektor baru via HTMX modal."""
+    if request.method == 'POST':
+        form = SectorForm(request.POST)
+        if form.is_valid():
+            sector = form.save()
+            
+            # HTMX: Return success
+            if request.htmx:
+                messages.success(
+                    request,
+                    f'Sektor {sector.name} berhasil ditambahkan'
+                )
+                response = HttpResponse(status=204)
+                response['HX-Trigger'] = 'sectorCreated'
+                return response
+            
+            messages.success(
+                request,
+                f'Sektor {sector.name} berhasil ditambahkan'
+            )
+            return redirect('members:sector_detail', pk=sector.pk)
+    else:
+        form = SectorForm()
+    
+    context = {
+        'form': form,
+        'title': 'Tambah Sektor Baru',
+        'submit_text': 'Simpan',
+    }
+    
+    # HTMX: Return modal content only
+    if request.htmx:
+        return render(request, 'members/partials/sector_form_modal.html', context)
+    
+    return render(request, 'members/sector_form.html', context)
+
+
+# ════════════════════════════════════════════════════════════
+# SECTOR UPDATE (HTMX Modal)
+# ════════════════════════════════════════════════════════════
+@login_required
+def sector_update(request, pk):
+    """Edit data sektor via HTMX modal."""
+    sector = get_object_or_404(Sector, pk=pk)
+    
+    if request.method == 'POST':
+        form = SectorForm(request.POST, instance=sector)
+        if form.is_valid():
+            form.save()
+            
+            # HTMX: Return success
+            if request.htmx:
+                messages.success(request, f'Data {sector.name} berhasil diperbarui.')
+                response = HttpResponse(status=204)
+                response['HX-Trigger'] = 'sectorUpdated'
+                return response
+            
+            messages.success(request, f'Data {sector.name} berhasil diperbarui.')
+            return redirect('members:sector_detail', pk=sector.pk)
+    else:
+        form = SectorForm(instance=sector)
+    
+    context = {
+        'form': form,
+        'sector': sector,
+        'title': f'Edit Sektor {sector.name}',
+        'submit_text': 'Simpan Perubahan',
+    }
+    
+    # HTMX: Return modal content only
+    if request.htmx:
+        return render(request, 'members/partials/sector_form_modal.html', context)
+    
+    return render(request, 'members/sector_form.html', context)

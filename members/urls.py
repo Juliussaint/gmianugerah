@@ -18,4 +18,10 @@ urlpatterns = [
     path('families/<int:pk>/', views.family_detail, name='family_detail'),
     path('families/<int:pk>/edit/', views.family_update, name='family_update'),
     path('families/<int:pk>/delete/', views.family_delete, name='family_delete'),
+
+    # Sector Management
+    path('sectors/', views.sector_list, name='sector_list'),
+    path('sectors/create/', views.sector_create, name='sector_create'),
+    path('sectors/<int:pk>/', views.sector_detail, name='sector_detail'),
+    path('sectors/<int:pk>/edit/', views.sector_update, name='sector_update'),
 ]

@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sector.name }} — Church Smart System{% endblock %}
+
+{% block page_title %}Detail Sektor{% endblock %}
+
+{% block breadcrumb %}
+<div class="flex items-center gap-2 text-xs mt-0.5">
+    <a href="{% url 'members:sector_list' %}" class="text-gray-400 hover:text-gray-600">Manajemen Sektor</a>
+    <span class="text-gray-300">›</span>
+    <span class="text-gray-600">{{ sector.name }}</span>
+</div>
+{% endblock %}
+
+{% block topbar_actions %}
+<button hx-get="{% url 'members:sector_update' sector.pk %}"
+        hx-target="#modal-container"
+        hx-swap="innerHTML"
+        class="flex items-center gap-2 text-sm font-semibold text-gray-700 bg-white px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+    </svg>
+    Edit Sektor
+</button>
+{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Left Column: Stats -->
+    <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Sector Info Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div class="text-center mb-6">
+                <div class="w-24 h-24 rounded-full bg-purple-50 border-4 border-purple-100 flex items-center justify-center mx-auto">
+                    <svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <h2 class="font-display font-bold text-gray-800 text-xl text-center mb-4">{{ sector.name }}</h2>
+            
+            {% if sector.description %}
+            <p class="text-gray-600 text-sm text-center mb-6">{{ sector.description }}</p>
+            {% endif %}
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center p-4 bg-green-50 rounded-xl">
+                    <p class="text-3xl font-bold text-green-700">{{ family_count }}</p>
+                    <p class="text-xs text-green-600 mt-1">Keluarga</p>
+                </div>
+                <div class="text-center p-4 bg-blue-50 rounded-xl">
+                    <p class="text-3xl font-bold text-blue-700">{{ member_count }}</p>
+                    <p class="text-xs text-blue-600 mt-1">Jemaat</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Right Column: Lists -->
+    <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Daftar Keluarga -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+                <h3 class="font-display font-semibold text-gray-800 text-base">Keluarga di Sektor Ini</h3>
+                <span class="text-sm text-gray-500">{{ family_count }} keluarga</span>
+            </div>
+            <div class="divide-y divide-gray-50">
+            {% for family in families %}
+                <div class="px-6 py-4 hover:bg-gray-50/50 transition">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <a href="{% url 'members:family_detail' family.pk %}" 
+                               class="text-gray-800 font-semibold hover:text-brand-600 transition">
+                                {{ family.family_name }}
+                            </a>
+                            <p class="text-gray-400 text-xs mt-1">
+                                {% if family.head_of_family %}
+                                    Kepala: {{ family.head_of_family.full_name }}
+                                {% else %}
+                                    Kepala keluarga belum ditentukan
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-gray-800 font-semibold">{{ family.member_count }} orang</p>
+                            <p class="text-gray-400 text-xs">anggota</p>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="px-6 py-12 text-center text-gray-400">
+                    Belum ada keluarga di sektor ini.
+                </div>
+            {% endfor %}
+            </div>
+            {% if family_count > 10 %}
+            <div class="px-6 py-4 border-t border-gray-50 text-center">
+                <a href="{% url 'members:family_list' %}?sector={{ sector.pk }}" 
+                   class="text-brand-600 hover:text-brand-700 font-semibold text-sm">
+                    Lihat Semua Keluarga →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Daftar Jemaat (10 teratas) -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+                <h3 class="font-display font-semibold text-gray-800 text-base">Jemaat di Sektor Ini</h3>
+                <span class="text-sm text-gray-500">{{ member_count }} jemaat</span>
+            </div>
+            <div class="divide-y divide-gray-50">
+            {% for member in members %}
+                <div class="px-6 py-4 hover:bg-gray-50/50 transition">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            {% if member.photo %}
+                            <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                                 class="w-10 h-10 rounded-full object-cover">
+                            {% else %}
+                            <div class="w-10 h-10 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center">
+                                <span class="text-brand-600 text-sm font-bold font-display">
+                                    {{ member.initials }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <a href="{% url 'members:detail' member.pk %}" 
+                                   class="text-gray-800 font-semibold hover:text-brand-600 transition">
+                                    {{ member.full_name }}
+                                </a>
+                                <p class="text-gray-400 text-xs">{{ member.family.family_name }}</p>
+                            </div>
+                        </div>
+                        <code class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-mono">
+                            {{ member.member_id }}
+                        </code>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="px-6 py-12 text-center text-gray-400">
+                    Belum ada jemaat di sektor ini.
+                </div>
+            {% endfor %}
+            </div>
+            {% if member_count > 10 %}
+            <div class="px-6 py-4 border-t border-gray-50 text-center">
+                <a href="{% url 'members:list' %}?sector={{ sector.pk }}" 
+                   class="text-brand-600 hover:text-brand-700 font-semibold text-sm">
+                    Lihat Semua Jemaat →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.body.addEventListener('sectorUpdated', function() {
+    location.reload();
+});
+</script>
+{% endblock %}

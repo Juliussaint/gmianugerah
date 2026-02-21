@@ -1,0 +1,63 @@
+<!-- Modal Background -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+     id="sector-modal"
+     @click.self="document.getElementById('modal-container').innerHTML = ''">
+    
+    <!-- Modal Content -->
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+        
+        <!-- Header -->
+        <div class="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+            <h2 class="font-display font-bold text-gray-800 text-xl">{{ title }}</h2>
+            <button onclick="document.getElementById('modal-container').innerHTML = ''"
+                    class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Form -->
+        <form hx-post="{% if sector %}{% url 'members:sector_update' sector.pk %}{% else %}{% url 'members:sector_create' %}{% endif %}"
+              hx-swap="none"
+              class="p-6 space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.name.label }} *</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+                <p class="text-gray-400 text-xs mt-1">Keterangan atau deskripsi sektor (opsional)</p>
+            </div>
+            
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p class="text-red-700 text-sm">{{ form.non_field_errors.0 }}</p>
+            </div>
+            {% endif %}
+            
+            <!-- Submit -->
+            <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <button type="submit" class="btn-primary px-8">
+                    {{ submit_text }}
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('modal-container').innerHTML = ''"
+                        class="btn-secondary">
+                    Batal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

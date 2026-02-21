@@ -408,3 +408,32 @@ class FamilySearchForm(forms.Form):
         choices=[('', 'Semua Status')] + list(Family.FamilyStatus.choices),
         widget=forms.Select(attrs={'class': 'input-field'})
     )
+
+
+# ════════════════════════════════════════════════════════════
+# SECTOR FORMS
+# ════════════════════════════════════════════════════════════
+
+class SectorForm(forms.ModelForm):
+    """Form untuk tambah/edit Sector."""
+    
+    class Meta:
+        model = Sector
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'input-field',
+                'placeholder': 'Nama sektor'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'input-field',
+                'rows': 3,
+                'placeholder': 'Keterangan atau deskripsi sektor (opsional)'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].label = "Nama Sektor"
+        self.fields['description'].label = "Keterangan"
+        self.fields['description'].required = False
