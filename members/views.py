@@ -6,7 +6,8 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from .models import Member, Family, Sector, SectorHistory
-from .forms import MemberForm, MemberSearchForm, SectorTransferForm, FamilyForm, FamilySearchForm
+from .forms import (MemberForm, MemberSearchForm, SectorTransferForm, 
+                    FamilyForm, FamilySearchForm, SectorForm)
 
 
 # ════════════════════════════════════════════════════════════
@@ -294,7 +295,7 @@ def family_list(request):
     - Pagination
     """
     families = Family.objects.select_related('sector', 'head_of_family').annotate(
-        member_count=Count('members', filter=Q(members__is_active=True))
+        member_count=Count('members', filter=Q(members__is_active=True), distinct=True)
     ).all()
     
     # ── Search & Filter ──
@@ -490,9 +491,9 @@ def sector_list(request):
     Daftar semua sektor dengan statistik.
     """
     sectors = Sector.objects.annotate(
-        family_count=Count('families', filter=Q(families__family_status=Family.FamilyStatus.ACTIVE)),
-        member_count=Count('members', filter=Q(members__is_active=True))
-    ).all()
+        family_count=Count('families', filter=Q(families__family_status=Family.FamilyStatus.ACTIVE), distinct=True),
+        member_count=Count('members', filter=Q(members__is_active=True), distinct=True)
+    ).order_by('name')
     
     context = {
         'sectors': sectors,
@@ -514,7 +515,7 @@ def sector_detail(request, pk):
     families = sector.families.filter(
         family_status=Family.FamilyStatus.ACTIVE
     ).annotate(
-        member_count=Count('members', filter=Q(members__is_active=True))
+        member_count=Count('members', filter=Q(members__is_active=True), distinct=True)
     )
     
     # Members in this sector

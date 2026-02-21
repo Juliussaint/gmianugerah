@@ -9,16 +9,26 @@
 {% endblock %}
 
 {% block topbar_actions %}
-<button hx-get="{% url 'members:sector_create' %}"
-        hx-target="#modal-container"
-        hx-swap="innerHTML"
-        class="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all active:scale-95"
-        style="background: linear-gradient(135deg, #5a66e8, #7b52e8);">
-    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-    </svg>
-    Tambah Sektor
-</button>
+<div class="flex items-center gap-3">
+    <!-- Sort Dropdown -->
+    <select id="sector-sort" class="text-sm border-gray-200 rounded-lg px-3 py-2 bg-white">
+        <option value="name">Urutkan: A-Z</option>
+        <option value="-name">Urutkan: Z-A</option>
+        <option value="-member_count">Terbanyak Jemaat</option>
+        <option value="-family_count">Terbanyak Keluarga</option>
+    </select>
+    
+    <button hx-get="{% url 'members:sector_create' %}"
+            hx-target="#modal-container"
+            hx-swap="innerHTML"
+            class="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all active:scale-95"
+            style="background: linear-gradient(135deg, #5a66e8, #7b52e8);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Tambah Sektor
+    </button>
+</div>
 {% endblock %}
 
 {% block content %}
@@ -97,5 +107,40 @@ document.body.addEventListener('sectorCreated', function() {
 document.body.addEventListener('sectorUpdated', function() {
     location.reload();
 });
+
+// Sorting functionality
+const sortSelect = document.getElementById('sector-sort');
+const sectorsContainer = document.querySelector('.grid');
+
+if (sortSelect && sectorsContainer) {
+    sortSelect.addEventListener('change', function() {
+        const sortBy = this.value;
+        const cards = Array.from(sectorsContainer.querySelectorAll('.grid > div'));
+        
+        cards.sort((a, b) => {
+            if (sortBy === 'name' || sortBy === '-name') {
+                const nameA = a.querySelector('h3').textContent.trim();
+                const nameB = b.querySelector('h3').textContent.trim();
+                return sortBy === 'name' ? 
+                    nameA.localeCompare(nameB) : 
+                    nameB.localeCompare(nameA);
+            }
+            else if (sortBy === '-member_count') {
+                const countA = parseInt(a.querySelector('.text-center:last-child p.text-2xl').textContent);
+                const countB = parseInt(b.querySelector('.text-center:last-child p.text-2xl').textContent);
+                return countB - countA;
+            }
+            else if (sortBy === '-family_count') {
+                const countA = parseInt(a.querySelector('.text-center:first-child p.text-2xl').textContent);
+                const countB = parseInt(b.querySelector('.text-center:first-child p.text-2xl').textContent);
+                return countB - countA;
+            }
+            return 0;
+        });
+        
+        // Re-append sorted cards
+        cards.forEach(card => sectorsContainer.appendChild(card));
+    });
+}
 </script>
 {% endblock %}
