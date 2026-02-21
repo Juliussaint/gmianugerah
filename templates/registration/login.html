@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Login — Church Smart System{% endblock %}
 
@@ -36,12 +37,25 @@
             </div>
         </div>
 
-        <div class="relative z-10">
-            <h1 class="font-display font-bold text-white text-5xl leading-[1.1] mb-6">
-                Gereja Methodist Indonesia<br/>
-                <span style="color: #a5bdff;">Jemaat Anugerah Medan</span>
+        <div class="relative z-10 max-w-xl">
+
+            <!-- Logo Gereja -->
+            <div class="mb-8">
+                <img src="{% static 'img/logo-gmi.png' %}"
+                    alt="Logo Gereja Methodist Indonesia Jemaat Anugerah Medan"
+                    class="w-28 sm:w-32 lg:w-40 xl:w-48 h-auto object-contain drop-shadow-[0_0_25px_rgba(98,114,245,0.35)]">
+            </div>
+
+            <h1 class="font-display font-bold text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-[1.1] mb-6">
+                <span class="block whitespace-nowrap">
+                    Gereja Methodist Indonesia
+                </span>
+                <span class="block whitespace-nowrap text-[#a5bdff]">
+                    Jemaat Anugerah Medan
+                </span>
             </h1>
-            <p class="text-gray-400 text-lg leading-relaxed max-w-sm">
+
+            <p class="text-gray-400 text-lg leading-relaxed max-w-md">
                 Platform manajemen jemaat terintegrasi — database jemaat, kehadiran, dan administrasi surat dalam satu sistem.
             </p>
 
