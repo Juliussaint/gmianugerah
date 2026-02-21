@@ -1,0 +1,33 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env
+
+# Django stuff
+*.log
+staticfiles/
+media/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# CapRover / Docker
+*.tar
+
+# Database
+*.sql
+
+# Tailwind CSS
+theme/static/css/dist/
+node_modules/

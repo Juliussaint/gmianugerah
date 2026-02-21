@@ -1,0 +1,28 @@
+name: Build and Deploy to CapRover
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create tarball
+        run: |
+          tar --exclude='./.git' \
+              --exclude='./venv' \
+              --exclude='./.env' \
+              -cvf deploy.tar .
+
+      - name: Deploy to CapRover
+        uses: caprover/deploy-from-github@v1.1.2
+        with:
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: 'gmi-anugerah'
+          token: ${{ secrets.CAPROVER_APP_TOKEN }}
