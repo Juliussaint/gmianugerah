@@ -1,0 +1,178 @@
+<!-- Modal Background -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+     id="family-modal"
+     @click.self="document.getElementById('modal-container').innerHTML = ''">
+    
+    <!-- Modal Content -->
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        
+        <!-- Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+            <h2 class="font-display font-bold text-gray-800 text-xl">{{ title }}</h2>
+            <button onclick="document.getElementById('modal-container').innerHTML = ''"
+                    class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Form -->
+        <form hx-post="{% if family %}{% url 'members:family_update' family.pk %}{% else %}{% url 'members:family_create' %}{% endif %}"
+              hx-swap="none"
+              class="p-6 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Info Dasar -->
+            <div class="space-y-4">
+                <h3 class="font-display font-semibold text-gray-700 text-sm">Informasi Dasar</h3>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.family_name.label }} *</label>
+                    {{ form.family_name }}
+                    {% if form.family_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.family_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.sector.label }} *</label>
+                        {{ form.sector }}
+                        {% if form.sector.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.sector.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.head_of_family.label }}</label>
+                        {{ form.head_of_family }}
+                        {% if form.head_of_family.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.head_of_family.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alamat -->
+            <div class="space-y-4 pt-4 border-t border-gray-100">
+                <h3 class="font-display font-semibold text-gray-700 text-sm">Alamat</h3>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.address_street.label }} *</label>
+                    {{ form.address_street }}
+                    {% if form.address_street.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.address_street.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.address_city.label }} *</label>
+                        {{ form.address_city }}
+                        {% if form.address_city.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.address_city.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.address_province.label }} *</label>
+                        {{ form.address_province }}
+                        {% if form.address_province.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.address_province.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.address_postal_code.label }}</label>
+                        {{ form.address_postal_code }}
+                        {% if form.address_postal_code.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.address_postal_code.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.phone_number.label }} *</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Keluarga -->
+            <div class="space-y-4 pt-4 border-t border-gray-100">
+                <h3 class="font-display font-semibold text-gray-700 text-sm">Status Keluarga</h3>
+                
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.family_status.label }} *</label>
+                    {{ form.family_status }}
+                    {% if form.family_status.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.family_status.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div id="dissolution-fields" class="space-y-4" style="display: none;">
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.dissolution_reason.label }}</label>
+                        {{ form.dissolution_reason }}
+                        {% if form.dissolution_reason.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.dissolution_reason.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.dissolution_date.label }}</label>
+                        {{ form.dissolution_date }}
+                        {% if form.dissolution_date.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.dissolution_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p class="text-red-700 text-sm">{{ form.non_field_errors.0 }}</p>
+            </div>
+            {% endif %}
+            
+            <!-- Submit -->
+            <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <button type="submit" class="btn-primary px-8">
+                    {{ submit_text }}
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('modal-container').innerHTML = ''"
+                        class="btn-secondary">
+                    Batal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Show/hide dissolution fields based on status
+(function() {
+    const statusSelect = document.querySelector('#family-modal select[name="family_status"]');
+    const dissolutionFields = document.getElementById('dissolution-fields');
+    
+    if (statusSelect && dissolutionFields) {
+        function toggleDissolutionFields() {
+            if (statusSelect.value === 'DISSOLVED') {
+                dissolutionFields.style.display = 'block';
+            } else {
+                dissolutionFields.style.display = 'none';
+            }
+        }
+        
+        toggleDissolutionFields();
+        statusSelect.addEventListener('change', toggleDissolutionFields);
+    }
+})();
+</script>

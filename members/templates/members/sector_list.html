@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Daftar Sektor — Church Smart System{% endblock %}
+
+{% block page_title %}Manajemen Sektor{% endblock %}
+
+{% block breadcrumb %}
+<p class="text-gray-400 text-xs mt-0.5">{{ total_count }} sektor terdaftar</p>
+{% endblock %}
+
+{% block topbar_actions %}
+<button hx-get="{% url 'members:sector_create' %}"
+        hx-target="#modal-container"
+        hx-swap="innerHTML"
+        class="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all active:scale-95"
+        style="background: linear-gradient(135deg, #5a66e8, #7b52e8);">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Tambah Sektor
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- Sector Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+{% for sector in sectors %}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition p-6">
+        <div class="flex items-start justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </div>
+            <button hx-get="{% url 'members:sector_update' sector.pk %}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <h3 class="font-display font-bold text-gray-800 text-xl mb-2">{{ sector.name }}</h3>
+        {% if sector.description %}
+        <p class="text-gray-500 text-sm mb-4 line-clamp-2">{{ sector.description }}</p>
+        {% else %}
+        <p class="text-gray-400 text-sm mb-4 italic">Tidak ada keterangan</p>
+        {% endif %}
+        
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div class="text-center flex-1">
+                <p class="text-2xl font-bold text-gray-800">{{ sector.family_count }}</p>
+                <p class="text-xs text-gray-500">Keluarga</p>
+            </div>
+            <div class="w-px h-10 bg-gray-200"></div>
+            <div class="text-center flex-1">
+                <p class="text-2xl font-bold text-gray-800">{{ sector.member_count }}</p>
+                <p class="text-xs text-gray-500">Jemaat</p>
+            </div>
+        </div>
+        
+        <a href="{% url 'members:sector_detail' sector.pk %}"
+           class="block mt-4 text-center text-brand-600 hover:text-brand-700 font-semibold text-sm transition">
+            Lihat Detail →
+        </a>
+    </div>
+{% empty %}
+    <div class="col-span-full text-center py-12">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+        </svg>
+        <p class="text-gray-400 mb-4">Belum ada sektor.</p>
+        <button hx-get="{% url 'members:sector_create' %}"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                class="btn-primary">
+            Tambah Sektor Pertama
+        </button>
+    </div>
+{% endfor %}
+</div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.body.addEventListener('sectorCreated', function() {
+    location.reload();
+});
+document.body.addEventListener('sectorUpdated', function() {
+    location.reload();
+});
+</script>
+{% endblock %}

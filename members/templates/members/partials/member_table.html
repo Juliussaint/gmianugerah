@@ -1,0 +1,41 @@
+<!-- Table wrapper for HTMX swap -->
+<div class="overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-100 bg-gray-50">
+                <th class="text-left text-gray-600 font-semibold px-6 py-3 text-xs uppercase tracking-wide">Jemaat</th>
+                <th class="text-left text-gray-600 font-semibold px-4 py-3 text-xs uppercase tracking-wide">NIJ</th>
+                <th class="text-left text-gray-600 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Sektor</th>
+                <th class="text-left text-gray-600 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden lg:table-cell">Keluarga</th>
+                <th class="text-left text-gray-600 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden xl:table-cell">Status</th>
+                <th class="px-4 py-3"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50" id="member-tbody">
+        {% include 'members/partials/member_rows.html' %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination - Infinite Scroll Trigger -->
+{% if page_obj.has_next %}
+<div class="text-center py-4"
+     hx-get="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+     hx-trigger="revealed"
+     hx-swap="beforeend"
+     hx-target="#member-tbody"
+     hx-indicator="#loading-spinner">
+    
+    <div id="loading-spinner" class="htmx-indicator">
+        <svg class="animate-spin h-8 w-8 text-brand-500 mx-auto" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <p class="text-gray-400 text-sm mt-2">Memuat lebih banyak...</p>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-4 text-gray-400 text-sm">
+    Menampilkan semua {{ total_count }} jemaat
+</div>
+{% endif %}

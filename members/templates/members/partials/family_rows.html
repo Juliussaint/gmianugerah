@@ -1,0 +1,71 @@
+{% for family in page_obj %}
+<tr class="hover:bg-gray-50/50 transition" id="family-row-{{ family.pk }}">
+    <td class="px-6 py-4">
+        <div>
+            <p class="text-gray-800 font-semibold">{{ family.family_name }}</p>
+            <p class="text-gray-400 text-xs mt-0.5">
+                📍 {{ family.address_city }}, {{ family.address_province }}
+            </p>
+        </div>
+    </td>
+    <td class="px-4 py-4 text-gray-600 hidden md:table-cell">
+        {{ family.sector.name }}
+    </td>
+    <td class="px-4 py-4 text-gray-600 hidden lg:table-cell">
+        {% if family.head_of_family %}
+            {{ family.head_of_family.full_name }}
+        {% else %}
+            <span class="text-gray-400">Belum ditentukan</span>
+        {% endif %}
+    </td>
+    <td class="px-4 py-4 hidden xl:table-cell">
+        <span class="text-gray-800 font-semibold">{{ family.member_count }}</span>
+        <span class="text-gray-400 text-xs">anggota</span>
+    </td>
+    <td class="px-4 py-4 hidden xl:table-cell">
+        {% if family.family_status == 'ACTIVE' %}
+        <span class="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium">Aktif</span>
+        {% elif family.family_status == 'INACTIVE' %}
+        <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-medium">Tidak Aktif</span>
+        {% else %}
+        <span class="text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-medium">Bubar</span>
+        {% endif %}
+    </td>
+    <td class="px-4 py-4 text-right">
+        <div class="flex items-center justify-end gap-2">
+            <a href="{% url 'members:family_detail' family.pk %}"
+               class="text-xs text-brand-600 hover:text-brand-700 font-medium transition">
+                Detail
+            </a>
+            <button hx-get="{% url 'members:family_update' family.pk %}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    class="text-xs text-gray-600 hover:text-gray-800 transition">
+                Edit
+            </button>
+            <button hx-get="{% url 'members:family_delete' family.pk %}"
+                    hx-target="#family-row-{{ family.pk }}"
+                    hx-swap="outerHTML"
+                    class="text-xs text-red-600 hover:text-red-700 transition">
+                Hapus
+            </button>
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+        {% if request.GET.q %}
+            Tidak ada hasil untuk "{{ request.GET.q }}"
+        {% else %}
+            Belum ada data keluarga.
+            <button hx-get="{% url 'members:family_create' %}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    class="text-brand-600 hover:underline">
+                Tambah sekarang →
+            </button>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}

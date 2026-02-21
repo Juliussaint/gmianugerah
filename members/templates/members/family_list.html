@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Daftar Keluarga — Church Smart System{% endblock %}
+
+{% block page_title %}Data Keluarga{% endblock %}
+
+{% block breadcrumb %}
+<p class="text-gray-400 text-xs mt-0.5">{{ total_count }} keluarga terdaftar</p>
+{% endblock %}
+
+{% block topbar_actions %}
+<button hx-get="{% url 'members:family_create' %}"
+        hx-target="#modal-container"
+        hx-swap="innerHTML"
+        class="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all active:scale-95"
+        style="background: linear-gradient(135deg, #5a66e8, #7b52e8);">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Tambah Keluarga
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- Search & Filter -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+    <form method="get" 
+          hx-get="{% url 'members:family_list' %}"
+          hx-trigger="change, keyup delay:300ms from:#id_q"
+          hx-target="#table-container"
+          hx-swap="innerHTML"
+          hx-indicator="#search-spinner"
+          class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Search -->
+        <div class="md:col-span-2 relative">
+            <label class="block text-gray-600 text-sm font-medium mb-2">
+                Pencarian
+                <svg id="search-spinner" class="htmx-indicator inline-block w-4 h-4 ml-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+            </label>
+            {{ form.q }}
+        </div>
+        
+        <!-- Filter Sektor -->
+        <div>
+            <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.sector.label }}</label>
+            {{ form.sector }}
+        </div>
+        
+        <!-- Filter Status -->
+        <div>
+            <label class="block text-gray-600 text-sm font-medium mb-2">{{ form.family_status.label }}</label>
+            {{ form.family_status }}
+        </div>
+        
+        <!-- Reset Button -->
+        <div class="md:col-span-3">
+            <a href="{% url 'members:family_list' %}" class="btn-secondary inline-block">Reset Filter</a>
+        </div>
+    </form>
+</div>
+
+<!-- Table Container - HTMX Target -->
+<div id="table-container" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    {% include 'members/partials/family_table.html' %}
+</div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Listen untuk event HTMX success
+document.body.addEventListener('familyCreated', function() {
+    htmx.ajax('GET', '{% url "members:family_list" %}', {target: '#table-container', swap: 'innerHTML'});
+    document.getElementById('modal-container').innerHTML = '';
+});
+
+document.body.addEventListener('familyUpdated', function() {
+    htmx.ajax('GET', '{% url "members:family_list" %}', {target: '#table-container', swap: 'innerHTML'});
+    document.getElementById('modal-container').innerHTML = '';
+});
+</script>
+{% endblock %}
