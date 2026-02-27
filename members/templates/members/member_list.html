@@ -9,16 +9,27 @@
 {% endblock %}
 
 {% block topbar_actions %}
-<button hx-get="{% url 'members:create' %}"
-        hx-target="#modal-container"
-        hx-swap="innerHTML"
-        class="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all active:scale-95"
-        style="background: linear-gradient(135deg, #5a66e8, #7b52e8);">
-    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-    </svg>
-    Tambah Jemaat
-</button>
+<div class="flex items-center gap-3">
+    <a href="{% url 'members:bulk_import' %}"
+       class="flex items-center gap-2 text-sm font-semibold text-gray-700 bg-white px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        Bulk Import
+    </a>
+    
+    <button hx-get="{% url 'members:create' %}"
+            hx-target="#modal-container"
+            hx-swap="innerHTML"
+            class="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all active:scale-95"
+            style="background: linear-gradient(135deg, #5a66e8, #7b52e8);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Tambah Jemaat
+    </button>
+</div>
 {% endblock %}
 
 {% block content %}

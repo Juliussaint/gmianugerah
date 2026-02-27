@@ -88,23 +88,23 @@
     </div>
 
     <!-- Right Panel: Login Form -->
-    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-16"
+    <div class="w-full lg:w-1/2 flex items-center justify-center px-6 py-10 sm:px-8 lg:p-16"
          style="background: #15181f;">
 
-        <div class="w-full max-w-md">
+        <div class="w-full max-w-md mx-auto">
 
-            <!-- Mobile logo -->
-            <div class="flex items-center gap-3 mb-10 lg:hidden">
-                <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                    </svg>
-                </div>
-                <span class="text-white font-display font-bold text-base">Church Smart System</span>
+            <!-- Mobile branding -->
+            <div class="lg:hidden mb-10 text-center">
+                <img src="{% static 'img/logo-gmi.png' %}"
+                    class="w-20 mx-auto mb-4 drop-shadow-[0_0_20px_rgba(98,114,245,0.35)]"
+                    alt="Logo Gereja">
+
+                <p class="text-sm text-gray-400">
+                    Church Smart System
+                </p>
             </div>
 
-            <h2 class="font-display font-bold text-white text-3xl mb-1">Selamat Datang</h2>
+            <h2 class="font-display font-bold text-white text-2xl sm:text-3xl mb-1">Selamat Datang</h2>
             <p class="text-gray-500 text-sm mb-8">Masuk ke akun Anda untuk melanjutkan</p>
 
             <!-- Error Alert -->

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db.models import Q
 import datetime
 
 
@@ -107,6 +108,57 @@ class Family(models.Model):
             parts.append(self.address_postal_code)
         return ", ".join(parts)
 
+    @property
+    def husband(self):
+        """Get suami (kepala keluarga) yang masih hidup"""
+        return self.members.filter(
+            family_role='HUSBAND',
+            is_deceased=False
+        ).first()
+
+    @property
+    def wife(self):
+        """Get istri yang masih hidup"""
+        return self.members.filter(
+            family_role='WIFE',
+            is_deceased=False
+        ).first()
+
+    @property
+    def children(self):
+        """Get semua anak yang masih hidup, sorted by birth_order"""
+        return self.members.filter(
+            family_role='CHILD',
+            is_deceased=False
+        ).order_by('birth_order')
+
+    @property
+    def deceased_members(self):
+        """Get anggota keluarga yang sudah meninggal"""
+        return self.members.filter(is_deceased=True).order_by('-deceased_date')
+
+    def validate_family_structure(self):
+        """Validasi struktur keluarga"""
+        errors = []
+
+        # Check: Maksimal 1 suami hidup
+        husband_count = self.members.filter(
+            family_role='HUSBAND',
+            is_deceased=False
+        ).count()
+        if husband_count > 1:
+            errors.append("Tidak boleh ada lebih dari 1 suami hidup dalam 1 keluarga")
+
+        # Check: Maksimal 1 istri hidup
+        wife_count = self.members.filter(
+            family_role='WIFE',
+            is_deceased=False
+        ).count()
+        if wife_count > 1:
+            errors.append("Tidak boleh ada lebih dari 1 istri hidup dalam 1 keluarga")
+
+        return errors
+
 
 # ──────────────────────────────────────────
 # MEMBER
@@ -133,6 +185,13 @@ class Member(models.Model):
         TRANSFER_IN  = "TRANSFER_IN",  "Pindah Masuk"
         TRANSFER_OUT = "TRANSFER_OUT", "Pindah Keluar"
 
+    class FamilyRole(models.TextChoices):
+        HUSBAND = 'HUSBAND', 'Suami'
+        WIFE = 'WIFE', 'Istri'
+        CHILD = 'CHILD', 'Anak'
+        PARENT = 'PARENT', 'Orang Tua (Kakek/Nenek)'
+        OTHER = 'OTHER', 'Lainnya'
+
     # ── Identitas ──
     member_id = models.CharField(
         max_length=15, unique=True, blank=True,
@@ -151,6 +210,22 @@ class Member(models.Model):
     )
     full_name = models.CharField(max_length=200, verbose_name="Nama Lengkap")
     gender    = models.CharField(max_length=1, choices=Gender.choices, verbose_name="Jenis Kelamin")
+
+    # ── Peran dalam Keluarga ──
+    family_role = models.CharField(
+        max_length=10,
+        choices=FamilyRole.choices,
+        default=FamilyRole.OTHER,
+        verbose_name="Peran dalam Keluarga",
+        help_text="Peran anggota dalam struktur keluarga"
+    )
+
+    birth_order = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Urutan Kelahiran",
+        help_text="Hanya untuk anak: 1 = anak pertama, 2 = anak kedua, dst."
+    )
 
     # ── Data Pribadi ──
     blood_type    = models.CharField(
@@ -180,6 +255,25 @@ class Member(models.Model):
         verbose_name="Alasan Tidak Aktif"
     )
 
+    # ── Status Kehidupan ──
+    is_deceased = models.BooleanField(
+        default=False,
+        verbose_name="Sudah Meninggal",
+        help_text="Centang jika jemaat sudah meninggal dunia"
+    )
+
+    deceased_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Tanggal Meninggal"
+    )
+
+    deceased_reason = models.TextField(
+        blank=True,
+        verbose_name="Sebab Meninggal / Catatan",
+        help_text="Opsional: Sebab meninggal atau catatan lainnya"
+    )
+
     # ── Foto ──
     photo = models.ImageField(
         upload_to="members/photos/%Y/%m/",
@@ -199,10 +293,44 @@ class Member(models.Model):
             models.Index(fields=["full_name"]),
             models.Index(fields=["is_active"]),
             models.Index(fields=["membership_status"]),
+            models.Index(fields=["family_role"]),
+            models.Index(fields=["is_deceased"]),
+        ]
+        constraints = [
+            # Pastikan birth_order unique per family untuk anak
+            models.UniqueConstraint(
+                fields=['family', 'birth_order'],
+                condition=Q(family_role='CHILD', birth_order__isnull=False),
+                name='unique_birth_order_per_family'
+            )
         ]
 
     def __str__(self):
         return f"{self.full_name} ({self.member_id})"
+
+    def clean(self):
+        """Validasi model-level"""
+        errors = {}
+
+        # Validasi 1: birth_order hanya untuk CHILD
+        if self.birth_order and self.family_role != self.FamilyRole.CHILD:
+            errors['birth_order'] = 'Urutan kelahiran hanya untuk anak'
+
+        # Validasi 2: CHILD wajib punya birth_order
+        if self.family_role == self.FamilyRole.CHILD and not self.birth_order:
+            errors['birth_order'] = 'Anak wajib memiliki urutan kelahiran'
+
+        # Validasi 3: Jika meninggal, wajib isi tanggal
+        if self.is_deceased and not self.deceased_date:
+            errors['deceased_date'] = 'Tanggal meninggal wajib diisi'
+
+        # Validasi 4: Tanggal meninggal harus setelah lahir
+        if self.deceased_date and self.date_of_birth:
+            if self.deceased_date < self.date_of_birth:
+                errors['deceased_date'] = 'Tanggal meninggal tidak boleh sebelum tanggal lahir'
+
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         # Auto-generate NIJ sebelum simpan pertama kali
@@ -291,9 +419,11 @@ class SectorHistory(models.Model):
         related_name="transfers_to",
         verbose_name="Ke Sektor"
     )
+
     transfer_date = models.DateField(verbose_name="Tanggal Pindah")
     reason        = models.CharField(max_length=200, blank=True, verbose_name="Alasan")
     notes         = models.TextField(blank=True, verbose_name="Catatan")
+
     created_by    = models.ForeignKey(
         User, on_delete=models.PROTECT,
         verbose_name="Dicatat Oleh"

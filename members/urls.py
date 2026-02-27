@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views_import import bulk_import_view, download_template
 
 app_name = 'members'
 
@@ -24,4 +25,8 @@ urlpatterns = [
     path('sectors/create/', views.sector_create, name='sector_create'),
     path('sectors/<int:pk>/', views.sector_detail, name='sector_detail'),
     path('sectors/<int:pk>/edit/', views.sector_update, name='sector_update'),
+
+    # Bulk Import
+    path('bulk-import/', bulk_import_view, name='bulk_import'),
+    path('bulk-import/download-template/', download_template, name='download_template'),
 ]

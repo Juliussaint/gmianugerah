@@ -198,13 +198,22 @@
             </a>
 
             <a href="{% url 'members:sector_list' %}"
-               class="sidebar-link {% if 'sector' in request.path %}active{% endif %}">
+               class="sidebar-link {% if 'sector' in request.path and 'bulk-import' not in request.path %}active{% endif %}">
                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 Sektor
+            </a>
+
+            <a href="{% url 'members:bulk_import' %}"
+               class="sidebar-link {% if 'bulk-import' in request.path %}active{% endif %}">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                Bulk Import
             </a>
 
             <div class="sidebar-label">Kegiatan</div>
@@ -258,17 +267,13 @@
                         {% if user.is_superuser %}Administrator{% else %}{{ user.profile.get_role_display|default:"Staff" }}{% endif %}
                     </p>
                 </div>
-                <form method="post" action="{% url 'logout' %}" class="inline m-0">
-                    {% csrf_token %}
-                    <button type="submit"
-                        title="Logout"
-                        class="text-gray-600 hover:text-red-400 transition flex-shrink-0 bg-transparent border-none p-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                    </button>
-                </form>
+                <a href="{% url 'logout' %}" title="Logout"
+                   class="text-gray-600 hover:text-red-400 transition flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                </a>
             </div>
         </div>
 

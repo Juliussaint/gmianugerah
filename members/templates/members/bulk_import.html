@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Import Jemaat — Church Smart System{% endblock %}
+
+{% block page_title %}Bulk Import dari Excel{% endblock %}
+
+{% block breadcrumb %}
+<div class="flex items-center gap-2 text-xs mt-0.5">
+    <a href="{% url 'members:list' %}" class="text-gray-400 hover:text-gray-600">Data Jemaat</a>
+    <span class="text-gray-300">›</span>
+    <span class="text-gray-600">Bulk Import</span>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% if step == 'upload' %}
+<!-- STEP 1: Upload File -->
+<div class="max-w-4xl mx-auto">
+    
+    <!-- Download Template -->
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h3 class="font-display font-semibold text-blue-900 text-base mb-2">Download Template Excel</h3>
+                <p class="text-blue-700 text-sm mb-4">
+                    Download template Excel terlebih dahulu, isi data jemaat sesuai format, lalu upload kembali di sini.
+                </p>
+                <a href="{% url 'members:download_template' %}" 
+                   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                    </svg>
+                    Download Template
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upload Form -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <h3 class="font-display font-semibold text-gray-800 text-lg mb-6">Upload File Excel</h3>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <label class="block text-gray-600 text-sm font-medium mb-3">Pilih File Excel (.xlsx)</label>
+                <input type="file" 
+                       name="excel_file" 
+                       accept=".xlsx"
+                       required
+                       class="block w-full text-sm text-gray-600
+                              file:mr-4 file:py-2 file:px-4
+                              file:rounded-lg file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-brand-50 file:text-brand-700
+                              hover:file:bg-brand-100
+                              cursor-pointer">
+                <p class="text-gray-400 text-xs mt-2">
+                    File harus berformat .xlsx dengan kolom sesuai template
+                </p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button type="submit" name="preview" class="btn-primary px-8">
+                    Preview Data
+                </button>
+                <a href="{% url 'members:list' %}" class="btn-secondary">
+                    Batal
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Instructions -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mt-6">
+        <h4 class="font-display font-semibold text-gray-800 text-base mb-4">Petunjuk Import</h4>
+        <ol class="space-y-2 text-sm text-gray-600">
+            <li class="flex items-start gap-2">
+                <span class="text-brand-600 font-semibold">1.</span>
+                <span>Download template Excel di atas</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-brand-600 font-semibold">2.</span>
+                <span>Isi data jemaat sesuai kolom yang tersedia (jangan ubah nama kolom)</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-brand-600 font-semibold">3.</span>
+                <span>Kolom yang wajib diisi: nama_lengkap, jenis_kelamin, tanggal_lahir, nama_keluarga, peran_keluarga, nama_sektor, alamat_jalan, kota, provinsi, telepon_keluarga</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-brand-600 font-semibold">4.</span>
+                <span>Peran keluarga: HUSBAND (suami), WIFE (istri), CHILD (anak), PARENT (orang tua/kakek/nenek), OTHER (lainnya)</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-brand-600 font-semibold">5.</span>
+                <span>Jika peran = CHILD, wajib isi urutan_anak (1, 2, 3, ...)</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-brand-600 font-semibold">6.</span>
+                <span>Format tanggal: YYYY-MM-DD (contoh: 1980-05-15)</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-brand-600 font-semibold">7.</span>
+                <span>Upload file, preview data, lalu confirm untuk import</span>
+            </li>
+        </ol>
+    </div>
+</div>
+
+{% elif step == 'preview' %}
+<!-- STEP 2: Preview Data -->
+<div class="max-w-6xl mx-auto">
+    
+    {% if has_errors %}
+    <!-- Error Summary -->
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-6 mb-6">
+        <h3 class="font-display font-semibold text-red-900 text-base mb-2">❌ Ada Error dalam Data</h3>
+        <p class="text-red-700 text-sm mb-4">
+            Ditemukan {{ errors|length }} baris dengan error. Perbaiki file Excel dan upload ulang.
+        </p>
+        <div class="bg-white rounded-lg p-4 max-h-60 overflow-y-auto">
+            {% for error in errors %}
+            <div class="text-sm text-red-600 mb-2">
+                <strong>Baris {{ error.row }}:</strong> {{ error.errors }}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-4">
+            <a href="{% url 'members:bulk_import' %}" class="btn-secondary">
+                ← Kembali Upload Ulang
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- Success Preview -->
+    <div class="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-display font-semibold text-green-900 text-base">Data Valid</h3>
+                <p class="text-green-700 text-sm">{{ total_rows }} jemaat siap di-import</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Preview -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="font-display font-semibold text-gray-800 text-base">Preview Data (10 pertama)</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Nama</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Keluarga</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Peran</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Gender</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Sektor</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                {% for item in data %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-gray-800">{{ item.nama_lengkap }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ item.nama_keluarga }}</td>
+                        <td class="px-4 py-3">
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                {{ item.peran_keluarga }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600">{{ item.jenis_kelamin }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ item.nama_sektor }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if total_rows > 10 %}
+        <div class="px-6 py-3 bg-gray-50 text-sm text-gray-500 text-center">
+            ... dan {{ total_rows|add:"-10" }} data lainnya
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Confirm Form -->
+    <div class="flex items-center gap-3">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="confirm_import" class="btn-primary px-8">
+                ✓ Confirm & Import Semua Data
+            </button>
+        </form>
+        <a href="{% url 'members:bulk_import' %}" class="btn-secondary">
+            ← Batal & Upload Ulang
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% elif step == 'error' %}
+<!-- STEP 3: Import Error -->
+<div class="max-w-4xl mx-auto">
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-6">
+        <h3 class="font-display font-semibold text-red-900 text-lg mb-4">Import Gagal</h3>
+        <p class="text-red-700 text-sm mb-4">
+            Berhasil: {{ success_count }} | Gagal: {{ error_count }}
+        </p>
+        <div class="bg-white rounded-lg p-4 max-h-80 overflow-y-auto mb-4">
+            {% for error in errors %}
+            <div class="text-sm text-red-600 mb-2">
+                <strong>Baris {{ error.row }}:</strong> {{ error.error }}
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{% url 'members:bulk_import' %}" class="btn-secondary">
+            ← Kembali & Coba Lagi
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

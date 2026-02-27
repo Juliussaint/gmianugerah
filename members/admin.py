@@ -41,7 +41,7 @@ class SectorHistoryInline(admin.TabularInline):
 class MemberInline(admin.TabularInline):
     model       = Member
     extra       = 0
-    fields      = ("full_name", "member_id", "gender", "membership_status", "is_active")
+    fields      = ("full_name", "member_id", "gender", "family_role", "birth_order", "membership_status", "is_active", "is_deceased")
     readonly_fields = ("member_id",)
     show_change_link = True
 
@@ -89,12 +89,13 @@ class FamilyAdmin(admin.ModelAdmin):
 class MemberAdmin(admin.ModelAdmin):
     list_display = (
         "get_photo_thumb", "full_name", "member_id",
-        "current_sector", "gender", "membership_status",
-        "is_active", "date_of_birth"
+        "family_role", "current_sector", "gender", 
+        "membership_status", "is_active", "get_deceased_badge",
+        "date_of_birth"
     )
     list_filter  = (
         "current_sector", "membership_status",
-        "is_active", "gender"
+        "is_active", "gender", "family_role", "is_deceased"
     )
     search_fields  = ("full_name", "member_id", "phone_number", "email")
     readonly_fields = ("member_id", "get_photo_thumb", "age_display")
@@ -109,6 +110,10 @@ class MemberAdmin(admin.ModelAdmin):
                 "blood_type", "photo", "get_photo_thumb"
             )
         }),
+        ("Peran dalam Keluarga", {
+            "fields": ("family_role", "birth_order"),
+            "classes": ("collapse",),
+        }),
         ("Kontak", {
             "fields": ("phone_number", "email"),
         }),
@@ -120,6 +125,10 @@ class MemberAdmin(admin.ModelAdmin):
         }),
         ("Data Gereja", {
             "fields": ("baptism_date", "sidi_date", "marriage_date"),
+            "classes": ("collapse",),
+        }),
+        ("Status Kehidupan", {
+            "fields": ("is_deceased", "deceased_date", "deceased_reason"),
             "classes": ("collapse",),
         }),
     )
@@ -142,6 +151,16 @@ class MemberAdmin(admin.ModelAdmin):
         age = obj.age
         return f"{age} tahun" if age else "-"
     age_display.short_description = "Usia"
+    
+    def get_deceased_badge(self, obj):
+        """Show deceased badge in list"""
+        if obj.is_deceased:
+            return format_html(
+                '<span style="background:#1f2937;color:white;padding:2px 8px;'
+                'border-radius:4px;font-size:11px;font-weight:600;">† Alm</span>'
+            )
+        return ""
+    get_deceased_badge.short_description = "Status"
 
 
 # ──────────────────────────────────────────
